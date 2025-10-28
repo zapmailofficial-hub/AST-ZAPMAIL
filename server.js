@@ -1,64 +1,64 @@
-require('dotenv').config();
+// AST ZAPMAIL server.js
 const express = require('express');
 const nodemailer = require('nodemailer');
+const dotenv = require('dotenv');
 const path = require('path');
 
+dotenv.config();
 const app = express();
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+
+// Serve static files from 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// transporter factory
-function makeTransporter(email, appPass) {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // STARTTLS
-    auth: {
-      user: email,
-      pass: appPass
-    }
-  });
-}
+// Parse JSON bodies
+app.use(express.json());
 
-// accounts
-const accounts = {
-  server01: { email: process.env.SERVER01_EMAIL, pass: process.env.SERVER01_APP_PASS },
-  server02: { email: process.env.SERVER02_EMAIL, pass: process.env.SERVER02_APP_PASS },
-  server03: { email: process.env.SERVER03_EMAIL, pass: process.env.SERVER03_APP_PASS },
-};
+// GET homepage
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-// send endpoint
+// POST /send to send emails
 app.post('/send', async (req, res) => {
+  const { fromAccount, to, subject, text } = req.body;
+
+  // Pick the correct Gmail account from environment variables
+  let email, appPass;
+  if (fromAccount === 'server01') {
+    email = process.env.SERVER01_EMAIL;
+    appPass = process.env.SERVER01_APP_PASS;
+  } else if (fromAccount === 'server02') {
+    email = process.env.SERVER02_EMAIL;
+    appPass = process.env.SERVER02_APP_PASS;
+  } else if (fromAccount === 'server03') {
+    email = process.env.SERVER03_EMAIL;
+    appPass = process.env.SERVER03_APP_PASS;
+  } else {
+    return res.status(400).json({ error: 'Invalid fromAccount' });
+  }
+
   try {
-    const { fromAccount = 'server01', to, subject, text, html } = req.body;
-
-    if (!to || !subject || (!text && !html)) {
-      return res.status(400).json({ error: 'to, subject and text/html required' });
-    }
-
-    const acct = accounts[fromAccount];
-    if (!acct || !acct.email || !acct.pass) {
-      return res.status(500).json({ error: 'sender account not configured' });
-    }
-
-    const transporter = makeTransporter(acct.email, acct.pass);
-
-    const info = await transporter.sendMail({
-      from: `"A SOCIETY ZAPMAIL" <${acct.email}>`,
-      to,
-      subject,
-      text,
-      html
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: email, pass: appPass }
     });
 
-    console.log('Message sent:', info.messageId);
-    return res.json({ ok: true, id: info.messageId });
+    const info = await transporter.sendMail({
+      from: email,
+      to,
+      subject,
+      text
+    });
+
+    res.json({ ok: true, id: info.messageId });
   } catch (err) {
-    console.error('send error', err);
-    return res.status(500).json({ error: 'send_failed', details: err.message });
+    console.error(err);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`AST ZAPMAIL running at http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`AST ZAPMAIL running on port ${PORT}`);
+});
