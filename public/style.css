@@ -1,0 +1,124 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Body styling */
+body {
+  background: #0f172a; /* dark techy background */
+  color: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Form container */
+form {
+  background: #1e293b;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Logo section */
+.logo-container {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.main-logo {
+  max-width: 150px;
+  display: block;
+  margin: 0 auto 10px auto;
+}
+
+.small-logo {
+  max-width: 50px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+/* Hover glow effect */
+.main-logo:hover, .small-logo:hover {
+  filter: drop-shadow(0 0 10px #38bdf8);
+  transform: scale(1.05);
+  transition: 0.3s;
+}
+
+/* Headings */
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #38bdf8; /* bright blue techy accent */
+}
+
+/* Labels and inputs */
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+input[type="text"], 
+input[type="email"], 
+textarea, 
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Button styling */
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #0ea5e9;
+}
+
+/* JSON output */
+pre {
+  margin-top: 20px;
+  background: #334155;
+  padding: 15px;
+  border-radius: 8px;
+  overflow-x: auto;
+  color: #f1f5f9;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media(max-width: 600px) {
+  form {
+    padding: 20px;
+  }
+
+  .main-logo {
+    max-width: 120px;
+  }
+
+  .small-logo {
+    max-width: 40px;
+  }
+}

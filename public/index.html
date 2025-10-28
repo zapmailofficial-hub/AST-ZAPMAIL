@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>AST ZAPMAIL — Send</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Logo and title -->
+  <div class="logo-container">
+    <img src="A SOCIETY TECH TEAM.png" alt="A SOCIETY TECH TEAM" class="main-logo">
+    <img src="zapmail_logo.png" alt="ZAPMAIL" class="main-logo">
+    <h1>A SOCIETY ZAPMAIL</h1>
+    <p style="color:#94a3b8; font-size:16px;">By AmannRam</p>
+    <p style="color:#94a3b8;">Send emails from your ZapMail servers</p>
+  </div>
+
+  <!-- Email form -->
+  <form id="mailForm">
+    <label>From account:
+      <select name="fromAccount">
+        <option value="server01">server01</option>
+        <option value="server02">server02</option>
+        <option value="server03">server03</option>
+      </select>
+    </label>
+
+    <label>To: <input name="to" type="email" placeholder="recipient@example.com" required></label>
+    <label>Subject: <input name="subject" type="text" placeholder="Email subject" required></label>
+    <label>Message:<br>
+      <textarea name="text" rows="8" placeholder="Write your message here..." required></textarea>
+    </label>
+
+    <button type="submit">Send</button>
+  </form>
+
+  <!-- Output JSON -->
+  <pre id="out"></pre>
+
+  <!-- Form JS -->
+  <script>
+    document.getElementById('mailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const body = {
+        fromAccount: form.get('fromAccount'),
+        to: form.get('to'),
+        subject: form.get('subject'),
+        text: form.get('text')
+      };
+      const res = await fetch('/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      document.getElementById('out').textContent = JSON.stringify(json, null, 2);
+    });
+  </script>
+</body>
+</html>
