@@ -1,8 +1,10 @@
-// AST ZAPMAIL server.js
+// AST ZAPMAIL with attachments
 const express = require('express');
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 dotenv.config();
 const app = express();
@@ -10,19 +12,24 @@ const app = express();
 // Serve static files from 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Parse JSON bodies
+// Parse JSON and form data
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Setup multer for file uploads (stored temporarily in 'uploads/')
+const upload = multer({ dest: 'uploads/' });
 
 // GET homepage
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// POST /send to send emails
-app.post('/send', async (req, res) => {
+// POST /send with attachments
+// 'attachments' field in form can handle multiple files
+app.post('/send', upload.array('attachments'), async (req, res) => {
   const { fromAccount, to, subject, text } = req.body;
 
-  // Pick the correct Gmail account from environment variables
+  // Select the Gmail account
   let email, appPass;
   if (fromAccount === 'server01') {
     email = process.env.SERVER01_EMAIL;
@@ -43,12 +50,27 @@ app.post('/send', async (req, res) => {
       auth: { user: email, pass: appPass }
     });
 
+    // Prepare attachments from uploaded files
+    let mailAttachments = [];
+    if (req.files) {
+      mailAttachments = req.files.map(file => ({
+        filename: file.originalname,
+        path: file.path
+      }));
+    }
+
     const info = await transporter.sendMail({
       from: email,
       to,
       subject,
-      text
+      text,
+      attachments: mailAttachments
     });
+
+    // Delete uploaded files after sending
+    if (req.files) {
+      req.files.forEach(file => fs.unlinkSync(file.path));
+    }
 
     res.json({ ok: true, id: info.messageId });
   } catch (err) {
